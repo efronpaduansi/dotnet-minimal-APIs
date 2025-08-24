@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Entities;
 using TodoApi.Models;
+using TodoApi.Models.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TodoDbContext>(opt => opt.UseInMemoryDatabase("TodoList"));
@@ -49,13 +49,13 @@ app.Run();
 //Get All Todos
 static async Task<IResult> GetAllTodos(TodoDbContext db)
 {
-    return TypedResults.Ok(await db.Todos.ToArrayAsync());
+    return TypedResults.Ok(await db.Todos.Select(x => new TodoItemDTO(x)).ToArrayAsync());
 }
 
 //Get completed todo items
 static async Task<IResult> GetCompleteTodos (TodoDbContext db)
 {
-    var result = await db.Todos.Where(t => t.IsComplete).ToListAsync();
+    var result = await db.Todos.Where(t => t.IsComplete).Select(x => new TodoItemDTO(x)).ToListAsync();
     return TypedResults.Ok(result);
 }
 
@@ -64,35 +64,40 @@ static async Task<IResult> GetTodo (int id, TodoDbContext db)
 {
     return await db.Todos.FindAsync(id)
     is Todo todo
-    ? TypedResults.Ok(todo)
+    ? TypedResults.Ok(new TodoItemDTO(todo))
     : TypedResults.NotFound();
 }
 
 //Create new todo item
-static async Task<IResult> CreateTodo(Todo todo, TodoDbContext db)
+static async Task<IResult> CreateTodo(TodoItemDTO dto, TodoDbContext db)
 {
-    db.Todos.Add(todo);
+    var todoItem = new Todo
+    {
+        Name = dto.Name,
+        IsComplete = dto.IsComplete
+    };
+
+    db.Todos.Add(todoItem);
     await db.SaveChangesAsync();
 
-    return TypedResults.Created($"/todoitems/{todo.Id}", todo);
+    return TypedResults.Created($"/todoitems/{todoItem.Id}", dto);
+
 }
 
-//Update todo item by id
-static async Task<IResult> UpdateTodo(int id, Todo inputTodo, TodoDbContext db)
+static async Task<IResult> UpdateTodo(int id, TodoItemDTO todoItemDTO, TodoDbContext db)
 {
     var todo = await db.Todos.FindAsync(id);
 
     if (todo is null) return TypedResults.NotFound();
 
-    todo.Name = inputTodo.Name;
-    todo.IsComplete = inputTodo.IsComplete;
+    todo.Name = todoItemDTO.Name;
+    todo.IsComplete = todoItemDTO.IsComplete;
 
     await db.SaveChangesAsync();
 
     return TypedResults.NoContent();
 }
 
-//Delete todo item by id
 static async Task<IResult> DeleteTodo(int id, TodoDbContext db)
 {
     if (await db.Todos.FindAsync(id) is Todo todo)
