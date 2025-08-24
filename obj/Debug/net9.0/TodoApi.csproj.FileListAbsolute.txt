@@ -55,3 +55,4 @@ C:\Workspace\latihan\TodoApi\bin\Debug\net9.0\Microsoft.Extensions.Logging.dll
 C:\Workspace\latihan\TodoApi\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
 C:\Workspace\latihan\TodoApi\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
 C:\Workspace\latihan\TodoApi\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
+C:\Workspace\latihan\TodoApi\obj\Debug\net9.0\TodoApi.sourcelink.json
